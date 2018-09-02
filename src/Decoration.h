@@ -49,6 +49,7 @@ private:
     void updateResizeBorders();
     void updateTitleBar();
     void updateButtonsGeometry();
+    void updateShadow();
 
     int titleBarHeight() const;
 

@@ -1,3 +1,4 @@
+find_package (FFTW REQUIRED)
 find_package (KDecoration2 REQUIRED)
 
 find_package (Qt5 REQUIRED COMPONENTS
@@ -13,6 +14,7 @@ find_package (KF5 REQUIRED COMPONENTS
 )
 
 set (decoration_SRCS
+    BoxShadowHelper.cc
     CloseButton.cc
     Decoration.cc
     MaximizeButton.cc
@@ -36,6 +38,7 @@ target_link_libraries (materialdecoration
 
     PRIVATE
         KDecoration2::KDecoration
+        ${FFTW_LIBRARIES}
 )
 
 install (TARGETS materialdecoration

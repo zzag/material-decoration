@@ -17,6 +17,7 @@
 
 // own
 #include "Decoration.h"
+#include "BoxShadowHelper.h"
 #include "CloseButton.h"
 #include "MaximizeButton.h"
 #include "MinimizeButton.h"
@@ -25,20 +26,72 @@
 // KDecoration
 #include <KDecoration2/DecoratedClient>
 #include <KDecoration2/DecorationSettings>
+#include <KDecoration2/DecorationShadow>
 
 // Qt
 #include <QPainter>
+#include <QSharedPointer>
 
 namespace Material
 {
 
+namespace
+{
+
+struct ShadowParams
+{
+    ShadowParams() = default;
+
+    ShadowParams(const QPoint &offset, int radius, qreal opacity)
+        : offset(offset)
+        , radius(radius)
+        , opacity(opacity) {}
+
+    QPoint offset;
+    int radius = 0;
+    qreal opacity = 0;
+};
+
+struct CompositeShadowParams
+{
+    CompositeShadowParams() = default;
+
+    CompositeShadowParams(
+            const QPoint &offset,
+            const ShadowParams &shadow1,
+            const ShadowParams &shadow2)
+        : offset(offset)
+        , shadow1(shadow1)
+        , shadow2(shadow2) {}
+
+    QPoint offset;
+    ShadowParams shadow1;
+    ShadowParams shadow2;
+};
+
+const CompositeShadowParams s_shadowParams = CompositeShadowParams(
+    QPoint(0, 18),
+    ShadowParams(QPoint(0, 0), 64, 0.8),
+    ShadowParams(QPoint(0, -10), 24, 0.1)
+);
+
+} // anonymous namespace
+
+static int s_decoCount = 0;
+static QColor s_shadowColor(33, 33, 33);
+static QSharedPointer<KDecoration2::DecorationShadow> s_cachedShadow;
+
 Decoration::Decoration(QObject *parent, const QVariantList &args)
     : KDecoration2::Decoration(parent, args)
 {
+    ++s_decoCount;
 }
 
 Decoration::~Decoration()
 {
+    if (--s_decoCount == 0) {
+        s_cachedShadow.clear();
+    }
 }
 
 void Decoration::paint(QPainter *painter, const QRect &repaintRegion)
@@ -77,6 +130,7 @@ void Decoration::init()
     updateBorders();
     updateResizeBorders();
     updateTitleBar();
+    updateShadow();
 
     auto buttonCreator = [this] (KDecoration2::DecorationButtonType type, KDecoration2::Decoration *decoration, QObject *parent)
             -> KDecoration2::DecorationButton* {
@@ -149,6 +203,70 @@ void Decoration::updateButtonsGeometry()
     }
 
     update();
+}
+
+void Decoration::updateShadow()
+{
+    if (!s_cachedShadow.isNull()) {
+        setShadow(s_cachedShadow);
+        return;
+    }
+
+    auto withOpacity = [] (const QColor &color, qreal opacity) -> QColor {
+        QColor c(color);
+        c.setAlphaF(opacity);
+        return c;
+    };
+
+    // In order to properly render a box shadow with a given radius `shadowSize`,
+    // the box size should be at least `2 * QSize(shadowSize, shadowSize)`.
+    const int shadowSize = qMax(s_shadowParams.shadow1.radius, s_shadowParams.shadow2.radius);
+    const QRect box(shadowSize, shadowSize, 2 * shadowSize + 1, 2 * shadowSize + 1);
+    const QRect rect = box.adjusted(-shadowSize, -shadowSize, shadowSize, shadowSize);
+
+    QImage shadow(rect.size(), QImage::Format_ARGB32_Premultiplied);
+    shadow.fill(Qt::transparent);
+
+    QPainter painter(&shadow);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    // Draw the "shape" shadow.
+    BoxShadowHelper::boxShadow(
+        &painter,
+        box,
+        s_shadowParams.shadow1.offset,
+        s_shadowParams.shadow1.radius,
+        withOpacity(s_shadowColor, s_shadowParams.shadow1.opacity));
+
+    // Draw the "contrast" shadow.
+    BoxShadowHelper::boxShadow(
+        &painter,
+        box,
+        s_shadowParams.shadow2.offset,
+        s_shadowParams.shadow2.radius,
+        withOpacity(s_shadowColor, s_shadowParams.shadow2.opacity));
+
+    // Mask out inner rect.
+    const QMargins padding = QMargins(
+        shadowSize - s_shadowParams.offset.x(),
+        shadowSize - s_shadowParams.offset.y(),
+        shadowSize + s_shadowParams.offset.x(),
+        shadowSize + s_shadowParams.offset.y());
+    const QRect innerRect = rect - padding;
+
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(Qt::black);
+    painter.setCompositionMode(QPainter::CompositionMode_DestinationOut);
+    painter.drawRect(innerRect);
+
+    painter.end();
+
+    s_cachedShadow = QSharedPointer<KDecoration2::DecorationShadow>::create();
+    s_cachedShadow->setPadding(padding);
+    s_cachedShadow->setInnerShadowRect(QRect(shadow.rect().center(), QSize(1, 1)));
+    s_cachedShadow->setShadow(shadow);
+
+    setShadow(s_cachedShadow);
 }
 
 int Decoration::titleBarHeight() const
