@@ -2,16 +2,14 @@
 
 ## material-decoration
 
-Material-ish window decoration for KWin.
+Material-ish window decoration theme for KWin.
 
 ### Installation
-
 
 ##### Prerequisites
 
 * FFTW
 * KDecoration2
-
 
 ##### Building from source
 
