@@ -1,0 +1,14 @@
+{
+    "KPlugin": {
+        "Description": "Window decoration",
+        "EnabledByDefault": false,
+        "Id": "com.github.zzag.material",
+        "Name": "Material",
+        "ServiceTypes": [
+            "org.kde.kdecoration2"
+        ]
+    },
+    "org.kde.kdecoration2": {
+        "blur": false
+    }
+}
