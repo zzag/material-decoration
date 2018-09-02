@@ -21,7 +21,6 @@
 #include "CloseButton.h"
 #include "MaximizeButton.h"
 #include "MinimizeButton.h"
-#include "metrics.h"
 
 // KDecoration
 #include <KDecoration2/DecoratedClient>
@@ -273,14 +272,7 @@ int Decoration::titleBarHeight() const
 {
     const QFontMetrics fontMetrics(settings()->font());
     const int baseUnit = settings()->gridUnit();
-
-    int height = 0;
-
-    height += baseUnit * metrics::TitleBar_TopMargin;
-    height += fontMetrics.height();
-    height += baseUnit * metrics::TitleBar_BottomMargin;
-
-    return height;
+    return qRound(1.5 * baseUnit) + fontMetrics.height();
 }
 
 void Decoration::paintFrameBackground(QPainter *painter, const QRect &repaintRegion) const
