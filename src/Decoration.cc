@@ -129,7 +129,6 @@ void Decoration::init()
     updateBorders();
     updateResizeBorders();
     updateTitleBar();
-    updateShadow();
 
     auto buttonCreator = [this] (KDecoration2::DecorationButtonType type, KDecoration2::Decoration *decoration, QObject *parent)
             -> KDecoration2::DecorationButton* {
@@ -161,6 +160,10 @@ void Decoration::init()
         buttonCreator);
 
     updateButtonsGeometry();
+
+    // For some reason, the shadow should be installed the last. Otherwise,
+    // the Window Decorations KCM crashes.
+    updateShadow();
 }
 
 void Decoration::updateBorders()
