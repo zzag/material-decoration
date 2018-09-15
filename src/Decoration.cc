@@ -80,6 +80,9 @@ static int s_decoCount = 0;
 static QColor s_shadowColor(33, 33, 33);
 static QSharedPointer<KDecoration2::DecorationShadow> s_cachedShadow;
 
+static qreal s_titleBarOpacityActive = 0.9;
+static qreal s_titleBarOpacityInactive = 1.0;
+
 Decoration::Decoration(QObject *parent, const QVariantList &args)
     : KDecoration2::Decoration(parent, args)
 {
@@ -306,7 +309,12 @@ QColor Decoration::titleBarBackgroundColor() const
     const auto group = decoratedClient->isActive()
         ? KDecoration2::ColorGroup::Active
         : KDecoration2::ColorGroup::Inactive;
-    return decoratedClient->color(group, KDecoration2::ColorRole::TitleBar);
+    const qreal opacity = decoratedClient->isActive()
+        ? s_titleBarOpacityActive
+        : s_titleBarOpacityInactive;
+    QColor color = decoratedClient->color(group, KDecoration2::ColorRole::TitleBar);
+    color.setAlphaF(opacity);
+    return color;
 }
 
 QColor Decoration::titleBarForegroundColor() const

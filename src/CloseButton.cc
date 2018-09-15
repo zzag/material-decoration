@@ -99,7 +99,7 @@ QColor CloseButton::backgroundColor() const
         );
     }
 
-    return deco->titleBarBackgroundColor();
+    return Qt::transparent;
 }
 
 QColor CloseButton::foregroundColor() const

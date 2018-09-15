@@ -101,7 +101,7 @@ QColor MinimizeButton::backgroundColor() const
             0.2);
     }
 
-    return deco->titleBarBackgroundColor();
+    return Qt::transparent;
 }
 
 QColor MinimizeButton::foregroundColor() const
