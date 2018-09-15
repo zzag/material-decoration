@@ -1,4 +1,3 @@
-find_package (FFTW REQUIRED)
 find_package (KDecoration2 REQUIRED)
 
 find_package (Qt5 REQUIRED COMPONENTS
@@ -38,7 +37,6 @@ target_link_libraries (materialdecoration
 
     PRIVATE
         KDecoration2::KDecoration
-        ${FFTW_LIBRARIES}
 )
 
 install (TARGETS materialdecoration

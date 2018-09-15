@@ -8,7 +8,6 @@ Material-ish window decoration theme for KWin.
 
 ##### Prerequisites
 
-* FFTW
 * KDecoration2
 
 ##### Building from source

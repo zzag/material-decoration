@@ -10,8 +10,6 @@ set (CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${ECM_MODULE_PATH}
     ${ECM_KDE_MODULE_DIR}
-    "${CMAKE_SOURCE_DIR}/cmake"
-    "${CMAKE_SOURCE_DIR}/cmake/Modules"
 )
 
 include (ECMInstallIcons)
